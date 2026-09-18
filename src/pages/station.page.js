@@ -7,6 +7,8 @@ import { createButton } from '../components/button.js';
 import { createCard } from '../components/card.js';
 import { createStationHeader } from '../components/station-header.js';
 import { createQuestionCard } from '../components/question-card.js';
+import { createPuzzleBoard } from '../components/puzzle-board.js';
+import { createCreativeLantern } from '../components/creative-lantern.js';
 import { createBadgeCard } from '../components/badge-card.js';
 import { createFeedbackMessage } from '../components/feedback-message.js';
 import { stationService } from '../services/station.service.js';
@@ -93,6 +95,21 @@ export function renderStationPage(container, stationCode) {
   const isAlreadyCompleted = playerService.hasCompletedStation(station.id);
   const badge = stationService.getBadgeById(station.badgeId);
 
+  // Thanh điều hướng nhanh về Hộ Chiếu / Bản đồ
+  const topNav = createElement('div', { class: 'station-top-nav' }, [
+    createButton({
+      id: 'btn-nav-passport',
+      text: 'HỘ CHIẾU THÁM HIỂM',
+      icon: '🧭',
+      variant: 'secondary',
+      className: 'app-btn--compact',
+      onClick: () => {
+        navigateToGateway();
+      },
+    }),
+  ]);
+  page.appendChild(topNav);
+
   // Station Header
   page.appendChild(
     createStationHeader({
@@ -112,20 +129,22 @@ export function renderStationPage(container, stationCode) {
     ]),
   ];
 
-  // Nút nghe nhiệm vụ giọng Thỏ Ngọc
-  const audioBtn = createButton({
-    id: 'btn-listen-mission',
-    text: station.audio.label,
-    icon: '🔊',
-    variant: 'audio',
-    onClick: () => {
-      audioBtn.classList.add('is-speaking');
-      audioService.speakText(station.audio.textToSpeak, () => {
-        audioBtn.classList.remove('is-speaking');
-      });
-    },
-  });
-  storyChildren.push(audioBtn);
+  // Nút nghe nhiệm vụ giọng Thỏ Ngọc (nếu có audio)
+  if (station.audio && station.audio.textToSpeak) {
+    const audioBtn = createButton({
+      id: 'btn-listen-mission',
+      text: station.audio.label || 'Nghe Thỏ Ngọc dặn dò',
+      icon: '🔊',
+      variant: 'audio',
+      onClick: () => {
+        audioBtn.classList.add('is-speaking');
+        audioService.speakText(station.audio.textToSpeak, () => {
+          audioBtn.classList.remove('is-speaking');
+        });
+      },
+    });
+    storyChildren.push(audioBtn);
+  }
 
   const storyCard = createCard({
     variant: 'story',
@@ -135,20 +154,22 @@ export function renderStationPage(container, stationCode) {
   page.appendChild(storyCard);
 
   // Hành vi cốt lõi: BỎ ĐIỆN THOẠI XUỐNG & QUAN SÁT MÔ HÌNH VẬT LÝ THẬT
-  const physicalBox = createElement('div', { class: 'physical-clue-box', id: 'physical-clue-box' }, [
-    createElement('div', { class: 'physical-clue-box__icon', 'aria-hidden': 'true' }, [station.physicalClue.icon]),
-    createElement('div', { class: 'physical-clue-box__text' }, [
-      createElement('h4', {}, [station.physicalClue.title]),
-      createElement('p', {}, [station.physicalClue.text]),
-    ]),
-  ]);
-  page.appendChild(physicalBox);
+  if (station.physicalClue) {
+    const physicalBox = createElement('div', { class: 'physical-clue-box', id: 'physical-clue-box' }, [
+      createElement('div', { class: 'physical-clue-box__icon', 'aria-hidden': 'true' }, [station.physicalClue.icon]),
+      createElement('div', { class: 'physical-clue-box__text' }, [
+        createElement('h4', {}, [station.physicalClue.title]),
+        createElement('p', {}, [station.physicalClue.text]),
+      ]),
+    ]);
+    page.appendChild(physicalBox);
+  }
 
-  // Khu vực tương tác câu hỏi & phản hồi
+  // Khu vực tương tác câu hỏi, puzzle hoặc creative builder
   const interactiveContainer = createElement('div', { id: 'station-interactive-zone' });
 
   if (isAlreadyCompleted) {
-    // Nếu trạm đã hoàn thành từ trước (refresh hoặc quay lại quét lại QR01)
+    // Nếu trạm đã hoàn thành từ trước (refresh hoặc quay lại quét lại QR)
     const completedBanner = createElement('div', {
       style: 'text-align: center; margin-bottom: var(--spacing-4);',
     }, [
@@ -156,11 +177,23 @@ export function renderStationPage(container, stationCode) {
         style: 'display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background: rgba(34, 197, 94, 0.2); border: 1px solid rgba(34, 197, 94, 0.4); border-radius: var(--radius-pill); color: #86efac; font-weight: 700; font-size: var(--font-size-xs); margin-bottom: var(--spacing-3);',
       }, ['✨ ĐÃ HOÀN THÀNH']),
       createElement('p', { style: 'font-size: var(--font-size-sm); color: var(--color-text-main); margin-bottom: var(--spacing-4);' }, [
-        MESSAGES_DATA.feedback.alreadyCompleted.desc,
+        `Bạn đã nhận 10 điểm và ${badge?.name || 'huy hiệu'} của trạm này rồi. Hãy tiếp tục khám phá các trạm khác trên mô hình nhé!`,
       ]),
     ]);
 
     interactiveContainer.appendChild(completedBanner);
+
+    // Nếu là Trạm 05 và bé đã có thiết kế đèn lồng, hiển thị lại tác phẩm của bé
+    if (station.interaction?.type === 'creative' && player.creativeDesign) {
+      const savedCreativeCard = createCreativeLantern({
+        creativeData: station.creative,
+        playerNickname: player.nickname,
+        initialDesign: player.creativeDesign,
+        disabled: true,
+      });
+      interactiveContainer.appendChild(savedCreativeCard);
+    }
+
     if (badge) {
       interactiveContainer.appendChild(createBadgeCard({ badge }));
     }
@@ -179,15 +212,8 @@ export function renderStationPage(container, stationCode) {
       ])
     );
   } else {
-    // Trạm chưa hoàn thành: Hiển thị câu hỏi để bé giải đố
-    const questionCard = createQuestionCard({
-      question: station.question,
-      disabled: false,
-      onAnswerSelected: (selectedOpt) => {
-        handleAnswerSubmission(selectedOpt, station, badge, interactiveContainer);
-      },
-    });
-    interactiveContainer.appendChild(questionCard);
+    // Trạm chưa hoàn thành: Render interaction phù hợp
+    renderInteractionZone(station, badge, interactiveContainer);
   }
 
   page.appendChild(interactiveContainer);
@@ -195,36 +221,76 @@ export function renderStationPage(container, stationCode) {
 }
 
 /**
- * Xử lý khi trẻ chọn một đáp án
+ * Điều phối render bộ tương tác (Single-choice, Puzzle, Creative)
  */
-function handleAnswerSubmission(selectedOption, station, badge, interactiveContainer) {
-  // Nếu đáp án SAI
-  if (!selectedOption.isCorrect) {
-    audioService.playWrongSound();
+function renderInteractionZone(station, badge, interactiveContainer) {
+  interactiveContainer.innerHTML = '';
+  const interactionType = station.interaction?.type || 'single-choice';
 
-    interactiveContainer.innerHTML = '';
-    const feedback = createFeedbackMessage({
-      type: 'wrong',
-      onRetry: () => {
-        // Cho phép thử lại ngay mà không bị phạt hay khóa game
-        interactiveContainer.innerHTML = '';
-        const questionCard = createQuestionCard({
-          question: station.question,
-          disabled: false,
-          onAnswerSelected: (opt) => handleAnswerSubmission(opt, station, badge, interactiveContainer),
-        });
-        interactiveContainer.appendChild(questionCard);
+  if (interactionType === 'puzzle') {
+    // TRẠM 03: Mini Puzzle tap-to-swap
+    const puzzleBoard = createPuzzleBoard({
+      puzzle: station.puzzle,
+      disabled: false,
+      onPuzzleSolved: () => {
+        handleSuccess(station, badge, interactiveContainer);
       },
     });
-    interactiveContainer.appendChild(feedback);
-    return;
+    interactiveContainer.appendChild(puzzleBoard);
+  } else if (interactionType === 'creative') {
+    // TRẠM 05: Creative Lantern Builder
+    const player = playerService.getPlayer();
+    const creativeComponent = createCreativeLantern({
+      creativeData: station.creative,
+      playerNickname: player?.nickname || 'Bé',
+      initialDesign: player?.creativeDesign || null,
+      disabled: false,
+      onCompleted: (design) => {
+        handleSuccess(station, badge, interactiveContainer, { creativeDesign: design });
+      },
+    });
+    interactiveContainer.appendChild(creativeComponent);
+  } else {
+    // TRẠM 01, 02, 04: Single-choice question
+    const questionCard = createQuestionCard({
+      question: station.question,
+      disabled: false,
+      onAnswerSelected: (selectedOpt) => {
+        if (!selectedOpt.isCorrect) {
+          handleWrongAnswer(station, badge, interactiveContainer);
+        } else {
+          handleSuccess(station, badge, interactiveContainer);
+        }
+      },
+    });
+    interactiveContainer.appendChild(questionCard);
   }
+}
 
-  // Nếu đáp án ĐÚNG
+/**
+ * Xử lý khi trẻ chọn đáp án SAI (Không phạt, cho thử lại vui vẻ)
+ */
+function handleWrongAnswer(station, badge, interactiveContainer) {
+  audioService.playWrongSound();
+
+  interactiveContainer.innerHTML = '';
+  const feedback = createFeedbackMessage({
+    type: 'wrong',
+    onRetry: () => {
+      renderInteractionZone(station, badge, interactiveContainer);
+    },
+  });
+  interactiveContainer.appendChild(feedback);
+}
+
+/**
+ * Xử lý khi hoàn thành nhiệm vụ ĐÚNG (Trao điểm + Huy hiệu + Confetti)
+ */
+function handleSuccess(station, badge, interactiveContainer, extraData = {}) {
   audioService.playSuccessSound();
 
-  // Gọi playerService để cập nhật điểm và huy hiệu (+10 điểm và lưu trạm hoàn thành)
-  const result = playerService.completeStation(station.id, station.reward.points, station.badgeId);
+  // Gọi playerService an toàn (chống lặp điểm)
+  playerService.completeStation(station.id, station.reward.points, station.badgeId, extraData);
 
   // Hiển thị giao diện vinh danh chiến thắng
   interactiveContainer.innerHTML = '';
@@ -235,10 +301,12 @@ function handleAnswerSubmission(selectedOption, station, badge, interactiveConta
   const correctFeedback = createFeedbackMessage({
     type: 'correct',
     customData: {
+      title: station.reward.successTitle || MESSAGES_DATA.feedback.correct.title,
+      desc: station.reward.successDesc || MESSAGES_DATA.feedback.correct.desc,
       pointsBadge: `⭐ +${station.reward.points} điểm`,
     },
     onContinue: () => {
-      // Về cổng vào để ngắm hộ chiếu hoặc chuyển tiếp
+      // Về cổng vào để ngắm hộ chiếu và tiếp tục hành trình
       navigateToGateway();
     },
   });

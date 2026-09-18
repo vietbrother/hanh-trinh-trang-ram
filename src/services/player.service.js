@@ -78,9 +78,10 @@ export const playerService = {
    * @param {string} stationId
    * @param {number} points
    * @param {string} badgeId
+   * @param {Object} [extraData={}] Dữ liệu bổ sung (như creativeDesign cho Trạm 05)
    * @returns {{ success: boolean, alreadyCompleted: boolean, pointsAwarded: number, player: Object }}
    */
-  completeStation(stationId, points = GAME_CONFIG.defaultRewardPoints, badgeId = null) {
+  completeStation(stationId, points = GAME_CONFIG.defaultRewardPoints, badgeId = null, extraData = {}) {
     let player = this.getPlayer();
     if (!player) {
       throw new Error('Chưa có thông tin người chơi!');
@@ -88,6 +89,17 @@ export const playerService = {
 
     // Business rule: Trạm chỉ được nhận thưởng một lần duy nhất
     if (this.hasCompletedStation(stationId)) {
+      // Nếu có extraData mới (ví dụ cập nhật thiết kế đèn), có thể lưu thêm mà không cộng điểm
+      if (extraData && Object.keys(extraData).length > 0) {
+        player = {
+          ...player,
+          ...extraData,
+          updatedAt: new Date().toISOString(),
+        };
+        storageService.savePlayer(player);
+        this._dispatchPlayerUpdate(player);
+      }
+
       return {
         success: true,
         alreadyCompleted: true,
@@ -110,6 +122,7 @@ export const playerService = {
       totalScore: updatedScore,
       completedStations: updatedCompleted,
       badges: updatedBadges,
+      ...extraData,
       updatedAt: new Date().toISOString(),
     };
 
@@ -122,6 +135,26 @@ export const playerService = {
       pointsAwarded: points,
       player,
     };
+  },
+
+  /**
+   * Kiểm tra người chơi đã hoàn thành toàn bộ hành trình (đủ 5 trạm) chưa
+   * @param {number} totalStations
+   * @returns {boolean}
+   */
+  isJourneyCompleted(totalStations = 5) {
+    const player = this.getPlayer();
+    if (!player || !Array.isArray(player.completedStations)) return false;
+    return player.completedStations.length >= totalStations;
+  },
+
+  /**
+   * Đếm số trạm đã hoàn thành
+   * @returns {number}
+   */
+  getCompletedCount() {
+    const player = this.getPlayer();
+    return player?.completedStations?.length || 0;
   },
 
   /**

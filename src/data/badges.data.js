@@ -1,5 +1,5 @@
 /**
- * Danh sách huy hiệu nhà thám hiểm
+ * Danh sách huy hiệu nhà thám hiểm cho 5 trạm Trung Thu 4.0
  */
 export const BADGES_DATA = {
   'moon-explorer': {
@@ -10,9 +10,46 @@ export const BADGES_DATA = {
     icon: '🌕',
     title: 'Huy Hiệu Cung Trăng',
     description: 'Đã xuất sắc tìm ra chiếc Đèn Ông Sao trên Cung Trăng!',
-    awardedMessage: 'Chúc mừng bạn đã chinh phục Trạm 01 và nhận được Huy hiệu Cung Trăng danh giá!',
+    awardedMessage: 'Chúc mừng bạn đã chinh phục Trạm 01 và nhận được Huy hiệu Cung Trăng!',
   },
-  // Các huy hiệu mở rộng trong tương lai:
-  // 'lantern-artisan': { ... },
-  // 'star-guide': { ... },
+  'river-explorer': {
+    id: 'river-explorer',
+    stationId: 'station-02',
+    stationCode: '02',
+    name: 'Người khám phá Sông Đà',
+    icon: '🌊',
+    title: 'Huy Hiệu Sông Đà',
+    description: 'Đã tinh mắt tìm thấy 3 chú cá đang ẩn mình trên dòng Sông Đà!',
+    awardedMessage: 'Chúc mừng bạn đã nhận được Huy hiệu Người khám phá Sông Đà!',
+  },
+  'mountain-explorer': {
+    id: 'mountain-explorer',
+    stationId: 'station-03',
+    stationCode: '03',
+    name: 'Nhà thám hiểm Núi',
+    icon: '🏔️',
+    title: 'Huy Hiệu Núi',
+    description: 'Đã khéo léo hoàn thành bức tranh ghép hình địa hình Núi hùng vĩ!',
+    awardedMessage: 'Chúc mừng bạn đã ghép đúng bức tranh Núi và nhận Huy hiệu Núi!',
+  },
+  'village-artisan': {
+    id: 'village-artisan',
+    stationId: 'station-04',
+    stationCode: '04',
+    name: 'Nghệ nhân Làng Trung Thu',
+    icon: '🏮',
+    title: 'Huy Hiệu Làng Trung Thu',
+    description: 'Đã tìm thấy chiếc đèn ông sao thất lạc và giải mã ký hiệu ngôi sao!',
+    awardedMessage: 'Chúc mừng bạn đã nhận được Huy hiệu Nghệ nhân Làng Trung Thu!',
+  },
+  'creative-kid': {
+    id: 'creative-kid',
+    stationId: 'station-05',
+    stationCode: '05',
+    name: 'Nhà sáng tạo nhí',
+    icon: '⭐',
+    title: 'Huy Hiệu Phố Đèn Lồng',
+    description: 'Đã tự tay thiết kế chiếc đèn lồng số rực rỡ đêm Trăng Rằm!',
+    awardedMessage: 'Chúc mừng bạn đã hoàn thành Phố Đèn Lồng và nhận Huy hiệu Nhà sáng tạo nhí!',
+  },
 };
