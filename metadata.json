@@ -1,0 +1,6 @@
+{
+  "name": "Trung Thu 4.0 — Hành Trình Trăng Rằm",
+  "description": "Bản đồ khám phá Trung Thu 4.0 kết hợp mô hình vật lý 3D, quét QR, storytelling Cung Trăng và minigame tìm đèn ông sao.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
