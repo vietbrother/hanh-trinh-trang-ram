@@ -2,6 +2,7 @@
  * Reusable Button Component
  */
 import { createElement } from '../utils/dom.js';
+import { audioService } from '../services/audio.service.js';
 
 /**
  * Tạo một button tái sử dụng
@@ -39,11 +40,15 @@ export function createButton({
     class: `app-btn app-btn--${variant} ${className}`.trim(),
     disabled: disabled ? 'disabled' : undefined,
     onClick: (e) => {
-      if (!disabled && typeof onClick === 'function') {
-        onClick(e);
+      if (!disabled) {
+        audioService.unlockAudio();
+        if (typeof onClick === 'function') {
+          onClick(e);
+        }
       }
     },
   }, children);
 
   return btn;
 }
+
