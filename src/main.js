@@ -2,12 +2,6 @@
  * Entry Point chính của TRUNG THU 4.0 — HÀNH TRÌNH TRĂNG RẰM
  * Chạy trực tiếp trên trình duyệt bằng Vanilla JS ES Modules
  */
-import './styles/reset.css';
-import './styles/tokens.css';
-import './styles/base.css';
-import './styles/components.css';
-import './styles/pages.css';
-
 import { createAppShell } from './components/app-shell.js';
 import { createPlayerProfile } from './components/player-profile.js';
 import { renderGatewayPage } from './pages/gateway.page.js';
