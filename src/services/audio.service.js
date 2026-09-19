@@ -57,29 +57,64 @@ class AudioService {
    */
   playSuccessSound() {
     if (this._isMuted) return;
-    const ctx = this._getAudioContext();
-    if (!ctx) return;
+    try {
+      const ctx = this._getAudioContext();
+      if (!ctx) return;
 
-    const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-    const now = ctx.currentTime;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const now = ctx.currentTime;
 
-    notes.forEach((freq, idx) => {
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+
+        gain.gain.setValueAtTime(0.001, now + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.2, now + idx * 0.1 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + idx * 0.1);
+        osc.stop(now + idx * 0.1 + 0.4);
+      });
+    } catch {
+      // Bỏ qua lỗi audio nếu thiết bị hoặc browser chặn Web Audio
+    }
+  }
+
+  /**
+   * Phát một âm tần số đơn (dùng cho phản hồi xúc giác nhẹ khi chạm / đổi chỗ mảnh ghép)
+   * @param {number} [freq=440]
+   * @param {number} [duration=0.12]
+   */
+  playTone(freq = 440, duration = 0.12) {
+    if (this._isMuted) return;
+    try {
+      const ctx = this._getAudioContext();
+      if (!ctx) return;
+
+      const now = ctx.currentTime;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
 
-      gain.gain.setValueAtTime(0.001, now + idx * 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.2, now + idx * 0.1 + 0.03);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.35);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      osc.start(now + idx * 0.1);
-      osc.stop(now + idx * 0.1 + 0.4);
-    });
+      osc.start(now);
+      osc.stop(now + duration + 0.05);
+    } catch {
+      // An toàn khi trình duyệt không cho phép audio
+    }
   }
 
   /**
@@ -87,25 +122,29 @@ class AudioService {
    */
   playWrongSound() {
     if (this._isMuted) return;
-    const ctx = this._getAudioContext();
-    if (!ctx) return;
+    try {
+      const ctx = this._getAudioContext();
+      if (!ctx) return;
 
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(329.63, now); // E4
-    osc.frequency.exponentialRampToValueAtTime(261.63, now + 0.25); // C4
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(329.63, now); // E4
+      osc.frequency.exponentialRampToValueAtTime(261.63, now + 0.25); // C4
 
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
 
-    osc.start(now);
-    osc.stop(now + 0.35);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    } catch {
+      // Bỏ qua lỗi audio
+    }
   }
 
   /**
@@ -113,23 +152,27 @@ class AudioService {
    */
   playTapSound() {
     if (this._isMuted) return;
-    const ctx = this._getAudioContext();
-    if (!ctx) return;
+    try {
+      const ctx = this._getAudioContext();
+      if (!ctx) return;
 
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(440, now);
-    gain.gain.setValueAtTime(0.05, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, now);
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
 
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
 
-    osc.start(now);
-    osc.stop(now + 0.07);
+      osc.start(now);
+      osc.stop(now + 0.07);
+    } catch {
+      // Bỏ qua lỗi audio
+    }
   }
 
   /**

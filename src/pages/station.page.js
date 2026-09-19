@@ -287,16 +287,28 @@ function handleWrongAnswer(station, badge, interactiveContainer) {
  * Xử lý khi hoàn thành nhiệm vụ ĐÚNG (Trao điểm + Huy hiệu + Confetti)
  */
 function handleSuccess(station, badge, interactiveContainer, extraData = {}) {
-  audioService.playSuccessSound();
+  try {
+    audioService.playSuccessSound();
+  } catch {
+    // Bỏ qua lỗi audio
+  }
 
-  // Gọi playerService an toàn (chống lặp điểm)
-  playerService.completeStation(station.id, station.reward.points, station.badgeId, extraData);
+  try {
+    // Gọi playerService an toàn (chống lặp điểm)
+    playerService.completeStation(station.id, station.reward.points, station.badgeId, extraData);
+  } catch (err) {
+    console.warn('Lỗi lưu tiến trình trạm:', err);
+  }
 
   // Hiển thị giao diện vinh danh chiến thắng
   interactiveContainer.innerHTML = '';
 
-  // Thêm hiệu ứng pháo hoa giấy vui nhộn nhẹ nhàng
-  triggerConfetti();
+  try {
+    // Thêm hiệu ứng pháo hoa giấy vui nhộn nhẹ nhàng
+    triggerConfetti();
+  } catch {
+    // Bỏ qua lỗi confetti
+  }
 
   const correctFeedback = createFeedbackMessage({
     type: 'correct',

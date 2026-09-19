@@ -38,8 +38,10 @@ export function createFeedbackMessage({ type, onRetry, onContinue, customData = 
       createElement('div', { style: 'font-size: 2.5rem; margin-bottom: 8px;', 'aria-hidden': 'true' }, [
         MESSAGES_DATA.feedback.correct.icon,
       ]),
-      createElement('h3', {}, [MESSAGES_DATA.feedback.correct.title]),
-      createElement('p', { style: 'margin: 6px 0 12px; font-weight: 500;' }, [MESSAGES_DATA.feedback.correct.desc]),
+      createElement('h3', {}, [customData.title || MESSAGES_DATA.feedback.correct.title]),
+      createElement('p', { style: 'margin: 6px 0 12px; font-weight: 500;' }, [
+        customData.desc || MESSAGES_DATA.feedback.correct.desc,
+      ]),
       createElement(
         'div',
         {

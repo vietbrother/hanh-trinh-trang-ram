@@ -5,6 +5,7 @@ import { createElement } from '../utils/dom.js';
 import { createScoreDisplay } from './score-display.js';
 import { audioService } from '../services/audio.service.js';
 import { navigateToGateway } from '../utils/url.js';
+import { openPlayerSettingsModal } from './player-modal.js';
 
 /**
  * Tạo thanh Header người chơi
@@ -16,6 +17,20 @@ import { navigateToGateway } from '../utils/url.js';
 export function createPlayerProfile({ player, onReset }) {
   const container = createElement('header', { class: 'player-bar', id: 'player-bar' });
 
+  function openSettings() {
+    if (!player) return;
+    openPlayerSettingsModal({
+      player,
+      onResetSuccess: () => {
+        if (typeof onReset === 'function') {
+          onReset();
+        } else {
+          navigateToGateway();
+        }
+      },
+    });
+  }
+
   if (!player) {
     // Khi chưa có player (ở Gateway), hiển thị logo nhỏ
     const brand = createElement('div', { class: 'player-bar__info' }, [
@@ -25,15 +40,28 @@ export function createPlayerProfile({ player, onReset }) {
     container.appendChild(brand);
   } else {
     // Đã có player: avatar thỏ + tên + điểm
+    const nameEl = createElement(
+      'span',
+      {
+        class: 'player-bar__name',
+        title: `${player.nickname} (Nhấn để đổi tên)`,
+        style: 'cursor: pointer;',
+        onClick: () => {
+          openSettings();
+        },
+      },
+      [player.nickname]
+    );
+
     const info = createElement('div', { class: 'player-bar__info' }, [
       createElement('span', { class: 'player-bar__avatar', 'aria-hidden': 'true' }, ['🐰']),
-      createElement('span', { class: 'player-bar__name', title: player.nickname }, [player.nickname]),
+      nameEl,
       createScoreDisplay(player.totalScore || 0),
     ]);
     container.appendChild(info);
   }
 
-  // Nút hành động: Tắt/bật âm thanh & Reset/Home
+  // Nút hành động: Tắt/bật âm thanh & Reset/Home/Settings
   const actions = createElement('div', { class: 'player-bar__actions' });
 
   // Nút Audio toggle
@@ -56,8 +84,23 @@ export function createPlayerProfile({ player, onReset }) {
   );
   actions.appendChild(soundBtn);
 
-  // Nếu đã có player, có thể có nút về Cổng (Passport)
+  // Nếu đã có player, có thể có nút Cài đặt (Đổi tên / Chơi lại) & nút về Cổng (Passport)
   if (player) {
+    const settingsBtn = createElement(
+      'button',
+      {
+        class: 'icon-btn',
+        id: 'btn-bar-settings',
+        'aria-label': 'Đổi tên hoặc Chơi lại từ đầu',
+        title: 'Đổi tên hoặc Chơi lại từ đầu',
+        onClick: () => {
+          openSettings();
+        },
+      },
+      ['⚙️']
+    );
+    actions.appendChild(settingsBtn);
+
     const homeBtn = createElement(
       'button',
       {

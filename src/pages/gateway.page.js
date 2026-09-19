@@ -6,6 +6,7 @@ import { createElement } from '../utils/dom.js';
 import { createButton } from '../components/button.js';
 import { createCard } from '../components/card.js';
 import { createPassport } from '../components/passport.js';
+import { openPlayerSettingsModal } from '../components/player-modal.js';
 import { playerService } from '../services/player.service.js';
 import { audioService } from '../services/audio.service.js';
 import { GAME_CONFIG } from '../config/game.config.js';
@@ -97,10 +98,15 @@ export function renderGatewayPage(container) {
     const passportComponent = createPassport({
       player,
       onResetRequest: () => {
-        if (window.confirm('Bạn có chắc muốn làm lại hành trình từ đầu không?')) {
-          playerService.resetProgress();
-          renderGatewayPage(container);
-        }
+        openPlayerSettingsModal({
+          player,
+          onRenameSuccess: () => {
+            renderGatewayPage(container);
+          },
+          onResetSuccess: () => {
+            renderGatewayPage(container);
+          },
+        });
       },
     });
 

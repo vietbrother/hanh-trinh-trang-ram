@@ -8,8 +8,9 @@ import { createCard } from './card.js';
 import { stationService } from '../services/station.service.js';
 import { playerService } from '../services/player.service.js';
 import { navigateToStation } from '../utils/url.js';
+import { openPlayerSettingsModal } from './player-modal.js';
 
-export function createPassport({ player, onResetRequest }) {
+export function createPassport({ player, onResetRequest, onRenameSuccess, onResetSuccess }) {
   const allStations = stationService.getAllStations();
   const completedStations = player.completedStations || [];
   const completedCount = completedStations.length;
@@ -22,13 +23,49 @@ export function createPassport({ player, onResetRequest }) {
     children: [],
   });
 
+  function handleOpenSettings() {
+    if (typeof onResetRequest === 'function') {
+      onResetRequest();
+    } else {
+      openPlayerSettingsModal({
+        player,
+        onRenameSuccess: (updated) => {
+          if (typeof onRenameSuccess === 'function') {
+            onRenameSuccess(updated);
+          }
+        },
+        onResetSuccess: () => {
+          if (typeof onResetSuccess === 'function') {
+            onResetSuccess();
+          }
+        },
+      });
+    }
+  }
+
   // 1. Header Hộ Chiếu
+  const editNameBtn = createElement(
+    'button',
+    {
+      type: 'button',
+      class: 'btn-inline-edit',
+      id: 'btn-inline-edit-name',
+      'aria-label': 'Đổi tên người chơi',
+      title: 'Đổi tên người chơi',
+      onClick: () => {
+        handleOpenSettings();
+      },
+    },
+    ['✏️ Đổi tên']
+  );
+
   const header = createElement('div', { class: 'passport-header', style: 'text-align: center; margin-bottom: var(--spacing-4);' }, [
     createElement('span', { style: 'font-size: 2.75rem; display: block; margin-bottom: 4px;', 'aria-hidden': 'true' }, ['🌕']),
     createElement('h2', { style: 'color: var(--color-accent-gold); font-size: var(--font-size-xl);' }, ['HỘ CHIẾU TRĂNG RẰM']),
     createElement('p', { style: 'font-size: var(--font-size-sm); color: var(--color-text-main); margin-top: 4px;' }, [
       'Nhà thám hiểm: ',
-      createElement('strong', { style: 'color: var(--color-accent-gold); font-size: 1.15em;' }, [player.nickname]),
+      createElement('strong', { id: 'passport-player-nickname', style: 'color: var(--color-accent-gold); font-size: 1.15em;' }, [player.nickname]),
+      editNameBtn,
     ]),
   ]);
   passportCard.appendChild(header);
@@ -185,12 +222,11 @@ export function createPassport({ player, onResetRequest }) {
   const resetBtn = createButton({
     id: 'btn-reset-player',
     text: 'Đổi tên hoặc Chơi lại từ đầu',
+    icon: '⚙️',
     variant: 'ghost',
     className: 'app-btn--secondary',
     onClick: () => {
-      if (typeof onResetRequest === 'function') {
-        onResetRequest();
-      }
+      handleOpenSettings();
     },
   });
   actionWrapper.appendChild(resetBtn);

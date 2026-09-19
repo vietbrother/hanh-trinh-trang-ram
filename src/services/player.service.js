@@ -158,6 +158,34 @@ export const playerService = {
   },
 
   /**
+   * Cập nhật biệt danh người chơi (Đổi tên) mà không làm mất điểm số và huy hiệu
+   * @param {string} rawNickname
+   * @returns {{ success: boolean, player?: Object, error?: string }}
+   */
+  updateNickname(rawNickname) {
+    const player = this.getPlayer();
+    if (!player) {
+      return { success: false, error: 'Chưa có thông tin người chơi!' };
+    }
+
+    const validation = validateNickname(rawNickname);
+    if (!validation.isValid) {
+      return { success: false, error: validation.error };
+    }
+
+    const updatedPlayer = {
+      ...player,
+      nickname: validation.sanitizedValue,
+      updatedAt: new Date().toISOString(),
+    };
+
+    storageService.savePlayer(updatedPlayer);
+    this._dispatchPlayerUpdate(updatedPlayer);
+
+    return { success: true, player: updatedPlayer };
+  },
+
+  /**
    * Xóa toàn bộ dữ liệu và reset game
    */
   resetProgress() {

@@ -48,6 +48,10 @@ function initApp() {
   window.addEventListener('app:navigate', route);
   window.addEventListener('player:changed', () => {
     refreshHeader();
+    // Nếu đang ở cổng chính (Gateway), cập nhật lại nội dung trang phù hợp với trạng thái người chơi
+    if (!getStationParam()) {
+      route();
+    }
   });
 
   // Khởi chạy route ban đầu
